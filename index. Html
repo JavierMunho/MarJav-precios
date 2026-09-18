@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <!-- Optimización crucial para celulares -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Generador de Precios - MarJav</title>
+    <style>
+        :root {
+            --marrón-oscuro: #4e342e;
+            --marrón-claro: #8d6e63;
+            --dorado: #d7ccc8;
+            --fondo: #f5f5f5;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--fondo);
+            color: #333;
+            margin: 0;
+            padding: 10px; /* Reducido para móviles */
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: var(--marrón-oscuro);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 15px;
+        }
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: 2px; }
+        .header p { margin: 5px 0 0 0; color: var(--dorado); font-size: 13px; }
+        
+        .form-agregar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: #eee;
+            padding: 15px;
+            border-radius: 6px;
+            align-items: center;
+            flex-wrap: wrap; /* Permite que los elementos bajen de línea */
+        }
+        .form-agregar input, .form-agregar select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+        .btn {
+            background-color: var(--marrón-claro);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            box-sizing: border-box;
+        }
+        .btn:hover { background-color: var(--marrón-oscuro); }
+        
+        /* Contenedor para que la tabla no rompa la pantalla en celular */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px; /* Asegura que no se apelmace demasiado el texto */
+        }
+        th {
+            background-color: var(--marrón-oscuro);
+            color: white;
+            padding: 10px 5px;
+            text-align: left;
+            font-size: 14px;
+        }
+        td {
+            padding: 8px 5px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+        .input-precio {
+            width: 65px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .categoria-row {
+            background-color: var(--dorado);
+            font-weight: bold;
+            color: var(--marrón-oscuro);
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        .btn-imprimir {
+            background-color: #2e7d32;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .btn-eliminar {
+            background-color: #c62828;
+            padding: 6px;
+            font-size: 11px;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        /* Ajustes específicos para pantallas pequeñas (Celulares) */
+        @media (max-width: 600px) {
+            .form-agregar { flex-direction: column; }
+            .form-agregar input, .form-agregar select, .form-agregar button { width: 100%; }
+            th, td { font-size: 13px; padding: 6px 4px; }
+            .input-precio { width: 55px; }
+        }
+        
+        /* Estilos para PDF / Impresión */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .no-print { display: none !important; }
+            .table-responsive { overflow: visible; }
+            .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .categoria-row { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            input.input-precio {
+                border: none;
+                background: transparent;
+                font-weight: bold;
+                font-family: inherit;
+                font-size: 14px;
+                padding: 0;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>MAR JAV</h1>
+        <p>Packs individuales en envases de polipropileno termosellado</p>
+        <p>Contacto: Javier 1138988346 | Marcela 1157081322</p>
+    </div>
+
+    <div class="form-agregar no-print">
+        <select id="nueva-categoria">
+            <option value="MIX DE FRUTOS SECOS">MIX DE FRUTOS SECOS</option>
+            <option value="FRUTAS SECAS PELADAS">FRUTAS SECAS PELADAS</option>
+            <option value="MANÍ">MANÍ</option>
+            <option value="SEMILLAS">SEMILLAS</option>
+            <option value="CEREALES">CEREALES</option>
+            <option value="PRODUCTOS CON CHOCOLATE">PRODUCTOS CON CHOCOLATE</option>
+            <option value="CONDIMENTOS & HIERBAS">CONDIMENTOS & HIERBAS</option>
+            <option value="FRUTOS DESECADOS">FRUTOS DESECADOS</option>
+        </select>
+        <input type="text" id="nuevo-producto" placeholder="Nombre del producto">
+        <input type="number" id="nuevo-precio" placeholder="Costo ($)">
+        <button class="btn" onclick="agregarProducto()">Agregar</button>
+    </div>
+
+    <div class="table-responsive">
+        <table id="tabla-precios">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Costo</th>
+                    <th>Sug. (40%)</th>
+                    <th>Sug. (50%)</th>
+                    <th class="no-print">Acción</th>
+                </tr>
+            </thead>
+            <tbody id="lista-productos">
+                <!-- Se carga por JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <button class="btn btn-imprimir no-print" onclick="window.print()">🖨️ Generar PDF / Imprimir Lista</button>
+</div>
+
+<script>
+    // Lista COMPLETA de productos
+    let productos = [
+        { id: 1, categoria: "MIX DE FRUTOS SECOS", nombre: "Mix eco banana", precio: 1450 },
+        { id: 2, categoria: "MIX DE FRUTOS SECOS", nombre: "Mix económico", precio: 1450 },
+        { id: 3, categoria: "MIX DE FRUTOS SECOS", nombre: "Mix cervecero", precio: 1250 },
+        { id: 4, categoria: "MIX DE FRUTOS SECOS", nombre: "Mix premium", precio: 2850 },
+        { id: 5, categoria: "MIX DE FRUTOS SECOS", nombre: "Mix seco", precio: 2850 },
+        { id: 6, categoria: "FRUTAS SECAS PELADAS", nombre: "Almendra Non Pareil 4 Nacional", precio: 3000 },
+        { id: 7, categoria: "FRUTAS SECAS PELADAS", nombre: "Nueces Mariposa Extralight", precio: 2500 },
+        { id: 8, categoria: "FRUTAS SECAS PELADAS", nombre: "Castañas de cajú tostadas y saladas", precio: 2500 },
+        { id: 9, categoria: "MANÍ", nombre: "Maní tostado con/sin sal Premium", precio: 650 },
+        { id: 10, categoria: "MANÍ", nombre: "Maní crocante Japonés", precio: 1200 },
+        { id: 11, categoria: "MANÍ", nombre: "Garrapiñada de maní", precio: 1000 },
+        { id: 12, categoria: "CONDIMENTOS & HIERBAS", nombre: "Hibiscus flor de Jamaica", precio: 2000 },
+        { id: 13, categoria: "SEMILLAS", nombre: "Mix de 4 semillas", precio: 500 },
+        { id: 14, categoria: "SEMILLAS", nombre: "Semillas de chía PREMIUM", precio: 900 },
+        { id: 15, categoria: "SEMILLAS", nombre: "Semillas de sésamo integral premium", precio: 600 },
+        { id: 16, categoria: "FRUTOS DESECADOS", nombre: "Pasas de uva flame Premium", precio: 700 },
+        { id: 17, categoria: "CEREALES", nombre: "Almohaditas rellenas (frutilla, avellana, limón, choco)", precio: 970 },
+        { id: 18, categoria: "CEREALES", nombre: "Aritos / Bolitas de chocolate", precio: 900 },
+        { id: 19, categoria: "PRODUCTOS CON CHOCOLATE", nombre: "Pasas de uva con chocolate de leche", precio: 3200 },
+        { id: 20, categoria: "PRODUCTOS CON CHOCOLATE", nombre: "Maní con chocolate semi amargo", precio: 1650 },
+        { id: 21, categoria: "PRODUCTOS CON CHOCOLATE", nombre: "Lentejas de chocolate multicolor", precio: 1650 },
+        { id: 22, categoria: "PRODUCTOS CON CHOCOLATE", nombre: "Chips de chocolate semi amargo", precio: 1300 }
+    ];
+
+    function redondearDecena(numero) {
+        return Math.round(numero / 10) * 10;
+    }
+
+    function renderizarTabla() {
+        const tbody = document.getElementById("lista-productos");
+        tbody.innerHTML = "";
+
+        const categorias = [...new Set(productos.map(p => p.categoria))];
+
+        categorias.forEach(cat => {
+            tbody.innerHTML += `
+                <tr class="categoria-row">
+                    <td colspan="5">${cat}</td>
+                </tr>
+            `;
+
+            const prods = productos.filter(p => p.categoria === cat);
+            prods.forEach(p => {
+                const precio40 = redondearDecena(p.precio * 1.40);
+                const precio50 = redondearDecena(p.precio * 1.50);
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.nombre}</td>
+                        <td>
+                            $<input type="number" class="input-precio" value="${p.precio}" 
+                            onchange="actualizarPrecio(${p.id}, this.value)">
+                        </td>
+                        <td><strong>$${precio40}</strong></td>
+                        <td><strong>$${precio50}</strong></td>
+                        <td class="no-print">
+                            <button class="btn-eliminar" onclick="eliminarProducto(${p.id})">Quitar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+    }
+
+    function agregarProducto() {
+        const categoria = document.getElementById("nueva-categoria").value;
+        const nombre = document.getElementById("nuevo-producto").value;
+        const precio = parseFloat(document.getElementById("nuevo-precio").value);
+
+        if (nombre.trim() === "" || isNaN(precio)) {
+            alert("Ingresa un nombre y un precio válido.");
+            return;
+        }
+
+        const nuevoId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;
+        productos.push({ id: nuevoId, categoria, nombre, precio });
+        
+        document.getElementById("nuevo-producto").value = "";
+        document.getElementById("nuevo-precio").value = "";
+        
+        renderizarTabla();
+    }
+
+    function actualizarPrecio(id, nuevoPrecio) {
+        const index = productos.findIndex(p => p.id === id);
+        if (index !== -1) {
+            productos[index].precio = parseFloat(nuevoPrecio);
+            renderizarTabla();
+        }
+    }
+
+    function eliminarProducto(id) {
+        productos = productos.filter(p => p.id !== id);
+        renderizarTabla();
+    }
+
+    renderizarTabla();
+</script>
+
+</body>
+</html>
